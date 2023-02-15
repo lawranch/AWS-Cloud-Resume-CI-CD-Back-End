@@ -1,0 +1,56 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  cloud-resume
+
+  Sample SAM Template for cloud-resume
+
+Globals:
+  Function:
+    Timeout: 3
+    MemorySize: 128
+    Tracing: Active
+  Api:
+    TracingEnabled: True
+
+Resources:
+  IncrementVisitorCountFunction:
+    Type: AWS::Serverless::Function 
+    Properties:
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: cloud-resume-3
+      CodeUri: increment-function/
+      Handler: app.lambda_handler
+      Runtime: python3.9
+      Architectures:
+        - x86_64
+      Events:
+        HelloWorld:
+          Type: Api
+          Properties:
+            Path: /increment
+            Method: get
+
+  DynamoDBTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: cloud-resume-3
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: "ID"
+          AttributeType: "S"
+      KeySchema:
+        - AttributeName: "ID"
+          KeyType: "HASH"
+
+Outputs:
+  IncrementVisitorCountApi:
+    Description: "API Gateway endpoint URL for Prod stage for IncrementVisitorCountFunction"
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/increment/"
+  IncrementVisitorCountFunction:
+    Description: "PutCountFunction Lambda Function ARN"
+    Value: !GetAtt IncrementVisitorCountCountFunction.Arn
+  IncrementVisitorCountCountFunctionIamRole:
+    Description: "Implicit IAM Role created for IncrementVisitorCountCountFunction"
+    Value: !GetAtt IncrementVisitorCountCountFunctionRole.Arn
