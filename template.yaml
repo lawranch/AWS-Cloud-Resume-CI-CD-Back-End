@@ -1,45 +1,52 @@
-name: SAM Validate, Build, Deploy
-on:
-  push:
-    branches: [ main ]
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  cloud-resume
 
-jobs:  
-  build-and-deploy-infra:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-python@v2
-        with:
-          python-version: '3.9'
-      - uses: aws-actions/setup-sam@v1
-      - uses: aws-actions/configure-aws-credentials@v1
-        with:
-          aws-access-key-id: ${{ secrets.ACCESS_KEY }}
-          aws-secret-access-key: ${{ secrets.SECRET_ACCESS_KEY }}
-          aws-region: us-east-1
-      - name: SAM Validate
-        run: |
-          sam validate
-      - name: SAM Build
-        run: |
-          sam build
-      - name: SAM Deploy
-        run: |
-          sam deploy --no-confirm-changeset --no-fail-on-empty-changeset
+  Sample SAM Template for cloud-resume
 
-  integration-test-backend:
-    needs: build-and-deploy-infra
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - run: make integration-test
+Globals:
+  Function:
+    Timeout: 3
 
-  end-to-end-test:
-    needs: integration-test-backend
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v2
-        with:
-          node-version: 14
-      - run: cd tests/end-to-end-test && npm install && node index.js
+Resources:
+  IncrementVisitorCountFunction:
+    Type: AWS::Serverless::Function 
+    Properties:
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: cloud-resume
+      CodeUri: increment-function/
+      Handler: app.lambda_handler
+      Runtime: python3.9
+      Architectures:
+        - x86_64
+      Events:
+        IncrementVisitorCount:
+          Type: Api
+          Properties:
+            Path: /increment
+            Method: get
+
+  DynamoDBTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: cloud-resume
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: "ID"
+          AttributeType: "S"
+      KeySchema:
+        - AttributeName: "ID"
+          KeyType: "HASH"
+
+Outputs:
+  IncrementVisitorCountApi:
+    Description: "API Gateway endpoint URL for Prod stage for IncrementVisitorCountFunction"
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/increment/"
+  IncrementVisitorCountFunction:
+    Description: "IncrementVisitorCountFunction Lambda Function ARN"
+    Value: !GetAtt IncrementVisitorCountFunction.Arn
+  IncrementVisitorCountFunctionIamRole:
+    Description: "Implicit IAM Role created for IncrementVisitorCountCountFunction"
+    Value: !GetAtt IncrementVisitorCountFunctionRole.Arn
