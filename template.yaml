@@ -48,5 +48,5 @@ Outputs:
     Description: "IncrementVisitorCountFunction Lambda Function ARN"
     Value: !GetAtt IncrementVisitorCountFunction.Arn
   IncrementVisitorCountFunctionIamRole:
-    Description: "Implicit IAM Role created for IncrementVisitorCountCountFunction"
+    Description: "Implicit IAM Role created for IncrementVisitorCountFunction"
     Value: !GetAtt IncrementVisitorCountFunctionRole.Arn
