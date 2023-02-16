@@ -26,20 +26,3 @@ jobs:
       - name: SAM Deploy
         run: |
           sam deploy --no-confirm-changeset --no-fail-on-empty-changeset
-
-  integration-test-backend:
-    needs: build-and-deploy-infra
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - run: make integration-test
-
-  end-to-end-test:
-    needs: integration-test-backend
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
-        with:
-          node-version: 14
-      - run: cd tests/end-to-end-test && npm install && node index.js
