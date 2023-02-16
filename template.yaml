@@ -8,10 +8,6 @@ Description: >
 Globals:
   Function:
     Timeout: 3
-    MemorySize: 128
-    Tracing: Active
-  Api:
-    TracingEnabled: True
 
 Resources:
   IncrementVisitorCountFunction:
@@ -19,14 +15,14 @@ Resources:
     Properties:
       Policies:
         - DynamoDBCrudPolicy:
-            TableName: cloud-resume-3
+            TableName: cloud-resume
       CodeUri: increment-function/
       Handler: app.lambda_handler
       Runtime: python3.9
       Architectures:
         - x86_64
       Events:
-        HelloWorld:
+        IncrementVisitorCount:
           Type: Api
           Properties:
             Path: /increment
@@ -35,7 +31,7 @@ Resources:
   DynamoDBTable:
     Type: AWS::DynamoDB::Table
     Properties:
-      TableName: cloud-resume-3
+      TableName: cloud-resume
       BillingMode: PAY_PER_REQUEST
       AttributeDefinitions:
         - AttributeName: "ID"
@@ -49,8 +45,8 @@ Outputs:
     Description: "API Gateway endpoint URL for Prod stage for IncrementVisitorCountFunction"
     Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/increment/"
   IncrementVisitorCountFunction:
-    Description: "PutCountFunction Lambda Function ARN"
-    Value: !GetAtt IncrementVisitorCountCountFunction.Arn
-  IncrementVisitorCountCountFunctionIamRole:
+    Description: "IncrementVisitorCountFunction Lambda Function ARN"
+    Value: !GetAtt IncrementVisitorCountFunction.Arn
+  IncrementVisitorCountFunctionIamRole:
     Description: "Implicit IAM Role created for IncrementVisitorCountCountFunction"
-    Value: !GetAtt IncrementVisitorCountCountFunctionRole.Arn
+    Value: !GetAtt IncrementVisitorCountFunctionRole.Arn
