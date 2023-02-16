@@ -8,7 +8,7 @@ def lambda_handler(event, context):
     response = client.update_item(
         TableName='cloud-resume',
         Key={
-            'stat': {'S': 'visitor_count'}
+            'ID': {'S': 'visitor_count'}
         },
         UpdateExpression='ADD quantity :inc',
         ExpressionAttributeValues={":inc": {"N": "1"}},
